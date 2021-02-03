@@ -2,11 +2,9 @@
 import 'dart:math';
 
 import 'package:flame/composition.dart';
-import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
-import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:rocket/RocketGame.dart';
-import 'package:rocket/black_hole.dart';
+import 'package:rocket/black_white_hole.dart';
 import 'package:rocket/element.dart';
 
 enum ELEMENT {
@@ -14,14 +12,15 @@ enum ELEMENT {
 }
 
 class ElementData {
-  int max = 4, current = 0;
+  int max = 3, current = 0;
   List<Offset> position = List.empty();
-  double appChance = 0.02, desChance = 0.005;
+  double appChance = 0.5, desChance = 0.05;
 }
 
 class ElementManager {
   Map<ELEMENT, ElementData> elementDataMap = {
-    ELEMENT.BLACK_HOLE: ElementData()
+    ELEMENT.BLACK_HOLE: ElementData(),
+    ELEMENT.WHITE_HOLE: ElementData(),
   };
 
   RocketGame _game;
@@ -29,17 +28,26 @@ class ElementManager {
   ElementManager(this._game);
 
   Random rng = Random();
+
+  double t = 0;
   
-  List<SpriteBodyComponent> elementList = List.empty(growable: true);
-  //List<int> unusedBlock = List.generate(24, (int index) => index);
+  List<RocketElement> elementList = List();
+
+  void init() {
+
+  }
 
   void update(double dt) {
     if (dt == 0) return;
 
-    List<SpriteBodyComponent> rem = List.empty(growable: true);
+    t += dt;
+    if (t < 1) return;
+    t -= 1;
+
+    List<RocketElement> rem = List.empty(growable: true);
     for (final e in elementList) {
-      final data = elementDataMap[ELEMENT.BLACK_HOLE];
-      removeElement(e, ELEMENT.BLACK_HOLE, data, rem);
+      final data = elementDataMap[e.element];
+      removeElement(e, data, rem);
     }
 
     for (final e in rem) {
@@ -54,7 +62,7 @@ class ElementManager {
     }
   }
 
-  void removeElement(SpriteBodyComponent c, ELEMENT element, ElementData data, List<SpriteBodyComponent> rem) {
+  void removeElement(RocketElement c, ElementData data, List<RocketElement> rem) {
     final rngValue = rng.nextDouble();
     if (rngValue < data.desChance) {
       rem.add(c);
@@ -70,10 +78,10 @@ class ElementManager {
       final rngValue = rng.nextDouble();
       if (rngValue < data.appChance) {
         final randomPos = Vector2.random() - Vector2.all(0.5) ;
-        print(randomPos);
+        //print(randomPos);
         final radius = elementSize(element);
         randomPos.setValues(randomPos.x * (15 - radius * 2), randomPos.y * (10 - radius * 2));
-        print(randomPos);
+        //print(randomPos);
         Vector3 c = Vector3(randomPos.x, randomPos.y, radius);
         if (isOverlapIn(c)) {
           continue;
@@ -96,7 +104,7 @@ class ElementManager {
 
   bool isOverlapIn(Vector3 c) {
     for (final used in elementList) {
-      if (isOverlap(c, Vector3(used.center.x, used.center.y, used.size.x / 2))) return true;
+      if (isOverlap(c, Vector3(used.position.x, used.position.y, used.size.x / 2))) return true;
     }
     return false;
   }
@@ -110,22 +118,22 @@ class ElementManager {
 
 
 
-  SpriteBodyComponent createComponent(ELEMENT element, Vector2 position) {
+  RocketElement createComponent(ELEMENT element, Vector2 position) {
 
     switch (element) {
       case ELEMENT.BLACK_HOLE:
         return BlackHole(_game, position, _game.blackHoleImage);
       case ELEMENT.WHITE_HOLE:
-        return BlackHole(_game, position, _game.whiteHoleImage);
+        return WhiteHole(_game, position, _game.whiteHoleImage);
     }
   }
 
   double elementSize(ELEMENT element) {
     switch (element) {
       case ELEMENT.BLACK_HOLE:
-        return BlackHole.RADIUS;
+        return BWHole.RADIUS;
       case ELEMENT.WHITE_HOLE:
-        return BlackHole.RADIUS;
+        return BWHole.RADIUS;
     }
   }
 }

@@ -1,14 +1,24 @@
+import 'dart:ui' as ui;
+
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:rocket/RocketGame.dart';
+import 'package:rocket/element_manager.dart';
 
-abstract class Element extends SpriteBodyComponent {
+abstract class RocketElement extends SpriteBodyComponent {
   RocketGame game;
 
   Vector2 position;
 
-  Element(Sprite sprite, Vector2 size) : super(sprite, size);
+  ELEMENT element;
 
-  //Element(this.game) : super()
+  RocketElement(this.game, this.position, Vector2 size, ui.Image image, this.element) : super(Sprite(image), size);
+
+  @override
+  void onRemove() {
+    world.destroyBody(body);
+
+    super.onRemove();
+  }
 }

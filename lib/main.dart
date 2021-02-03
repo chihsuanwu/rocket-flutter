@@ -8,8 +8,8 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
 
-  Flame.util.fullScreen();
-  Flame.util.setLandscape();
+  await Flame.util.fullScreen();
+  await Flame.util.setLandscape();
 
   Flame.images.loadAll(<String>[
     'rocket1P.png',

@@ -3,11 +3,12 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flame/components.dart';
+import 'package:flame/flame.dart';
 import 'package:flame/gestures.dart';
-import 'package:flame_forge2d/body_component.dart';
 import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:rocket/black_white_hole.dart';
 import 'package:rocket/boundaries.dart';
 import 'package:rocket/element_manager.dart';
 
@@ -50,6 +51,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
     b.forEach(add);
 
     addContactCallback(RocketBulletContactCallback());
+    addContactCallback(BlackWhiteHoleBulletContactCallback());
   }
 
   @override
@@ -87,14 +89,11 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
       case AppLifecycleState.resumed:
         break;
       case AppLifecycleState.inactive:
-        print("INACTIVE");
         break;
       case AppLifecycleState.paused:
         onGamePause();
-        print("PAUSED");
         break;
       case AppLifecycleState.detached:
-        print("DETACH");
         break;
     }
 

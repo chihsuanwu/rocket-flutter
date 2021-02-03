@@ -74,5 +74,5 @@ class Bullet extends BodyComponent {
   }
 
   @override
-  int get priority => 10;
+  int get priority => 3;
 }
