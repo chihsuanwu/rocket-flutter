@@ -1,10 +1,11 @@
 import 'dart:ui';
 
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/painting.dart';
 import 'package:rocket/RocketGame.dart';
 
-class CountDown extends Component{
+class CountDown extends Component {
 
   bool _start = false;
   double _counter = 0;
@@ -15,7 +16,6 @@ class CountDown extends Component{
 
   RocketGame _game;
 
-
   CountDown(RocketGame game) {
     _game = game;
 
@@ -25,7 +25,7 @@ class CountDown extends Component{
     );
 
     textStyle = TextStyle(
-      color: Color(0xFFDE0000),
+      color: Colors.red,
       fontSize: 90
       // shadows: [
       //   Shadow(
@@ -42,6 +42,10 @@ class CountDown extends Component{
   void startCountDown() {
     _start = true;
   }
+
+  @override
+  int get priority => 100;
+
 
   @override
   void render(Canvas c) {

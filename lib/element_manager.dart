@@ -6,14 +6,15 @@ import 'package:flame_forge2d/flame_forge2d.dart';
 import 'package:rocket/RocketGame.dart';
 import 'package:rocket/black_white_hole.dart';
 import 'package:rocket/element.dart';
+import 'package:rocket/meteorite.dart';
+import 'package:rocket/sun.dart';
 
 enum ELEMENT {
- BLACK_HOLE, WHITE_HOLE
+ BLACK_HOLE, WHITE_HOLE, METEORITE, SUN
 }
 
 class ElementData {
-  int max = 3, current = 0;
-  List<Offset> position = List.empty();
+  int max = 2, current = 0;
   double appChance = 0.5, desChance = 0.05;
 }
 
@@ -21,6 +22,8 @@ class ElementManager {
   Map<ELEMENT, ElementData> elementDataMap = {
     ELEMENT.BLACK_HOLE: ElementData(),
     ELEMENT.WHITE_HOLE: ElementData(),
+    ELEMENT.METEORITE: ElementData()..appChance = 1..max = 4,
+    ELEMENT.SUN: ElementData(),
   };
 
   RocketGame _game;
@@ -31,10 +34,17 @@ class ElementManager {
 
   double t = 0;
   
-  List<RocketElement> elementList = List();
+  List<RocketElement> elementList = [];
 
   void init() {
+    for (final e in elementList) {
+      _game.remove(e);
+    }
+    elementList = [];
 
+    elementDataMap.forEach((key, value) {
+      value.current = 0;
+    });
   }
 
   void update(double dt) {
@@ -125,7 +135,14 @@ class ElementManager {
         return BlackHole(_game, position, _game.blackHoleImage);
       case ELEMENT.WHITE_HOLE:
         return WhiteHole(_game, position, _game.whiteHoleImage);
+      case ELEMENT.METEORITE:
+        final is3Or2 = rng.nextBool();
+        return Meteorite(this, is3Or2, _game, position, is3Or2 ? _game.meteorite3Image:_game.meteorite2Image);
+      case ELEMENT.SUN:
+        return Sun(_game, position, _game.sunImage);
     }
+
+    return null;
   }
 
   double elementSize(ELEMENT element) {
@@ -134,6 +151,14 @@ class ElementManager {
         return BWHole.RADIUS;
       case ELEMENT.WHITE_HOLE:
         return BWHole.RADIUS;
+      case ELEMENT.METEORITE:
+        return Meteorite.RADIUS;
+      case ELEMENT.SUN:
+        return Sun.RADIUS;
     }
+
+    return null;
   }
+
+
 }

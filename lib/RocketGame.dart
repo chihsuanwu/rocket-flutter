@@ -10,10 +10,12 @@ import 'package:flame_forge2d/forge2d_game.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:rocket/black_white_hole.dart';
 import 'package:rocket/boundaries.dart';
+import 'package:rocket/element.dart';
 import 'package:rocket/element_manager.dart';
+import 'package:rocket/meteorite.dart';
 
 import 'Bullet.dart';
-import 'CountDown.dart';
+import 'count_down.dart';
 import 'Rocket.dart';
 
 
@@ -37,7 +39,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
 
   ui.Image rocket1PImage,
       rocket2PImage,
-      backgroundImage, playImage, restartImage, pauseImage,blackHoleImage, whiteHoleImage;
+      backgroundImage, playImage, restartImage, pauseImage,blackHoleImage, whiteHoleImage, meteorite2Image, meteorite3Image, sunImage;
 
   ElementManager elementManager;
 
@@ -51,7 +53,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
     b.forEach(add);
 
     addContactCallback(RocketBulletContactCallback());
-    addContactCallback(BlackWhiteHoleBulletContactCallback());
+    addContactCallback(ElementBulletContactCallback());
   }
 
   @override
@@ -82,8 +84,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
 
   @override
   void lifecycleStateChange(ui.AppLifecycleState state) {
-    print(state);
-    //super.lifecycleStateChange(state);
+    super.lifecycleStateChange(state);
 
     switch (state) {
       case AppLifecycleState.resumed:
@@ -97,9 +98,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
         break;
     }
 
-
   }
-
 
   @override
   Future<void> onLoad() async {
@@ -111,6 +110,9 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
     pauseImage = await images.load('pause.png');
     blackHoleImage = await images.load('blackhole.png');
     whiteHoleImage = await images.load('whitehole.png');
+    meteorite2Image = await images.load('meteorite_2.png');
+    meteorite3Image = await images.load('meteorite_3.png');
+    sunImage = await images.load('sun.png');
 
     rocket1P = Rocket(this, rocket1PImage, Player.PLAYER_1P);
     rocket2P = Rocket(this, rocket2PImage, Player.PLAYER_2P);
@@ -207,11 +209,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
         if (element.runtimeType == CountDown) {
           element.update(dt);
         }
-        //if (element.runtimeType != Rocket && element.runtimeType != Bullet) {
-          //element.update(dt);
-        //}
       });
-      //return;
     }
 
     if (_status == GAME_STATUS.PLAYING) {
@@ -235,6 +233,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
       _status = GAME_STATUS.COUNTDOWN;
       rocket1P.init();
       rocket2P.init();
+      elementManager.init();
       bulletCounter = 0;
       CountDown countDown = CountDown(this);
       add(countDown);
@@ -250,6 +249,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
         });
         rocket1P.init();
         rocket2P.init();
+        elementManager.init();
       }
       CountDown countDown = CountDown(this);
       add(countDown);
@@ -266,9 +266,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
           rocket1P.hasBullet = false;
           Vector2 v = rocket1P.createBullet();
 
-          Bullet b = Bullet(this, v, 0);
-          add(b);
-          bulletCounter++;
+          Bullet(this, v, Vector2(1, 0));
         } else {
           rocket1P.rev();
         }
@@ -278,9 +276,7 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
           rocket2P.hasBullet = false;
           Vector2 v = rocket2P.createBullet();
 
-          Bullet b = Bullet(this, v, math.pi);
-          add(b);
-          bulletCounter++;
+          Bullet(this, v, Vector2(-1, 0));
         } else {
           rocket2P.rev();
         }

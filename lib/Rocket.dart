@@ -203,7 +203,12 @@ class Rocket extends SpriteBodyComponent {
   }
 
   void hitByBullet(Bullet b) {
-    _hp -= 1;
+    if (b.bulletStatus == BULLET_STATUS.FIRE) {
+      _hp -= 2;
+    } else {
+      _hp -= 1;
+    }
+
     if (_hp <= 0) {
       _game.onGameEnd();
     }
@@ -214,14 +219,10 @@ class Rocket extends SpriteBodyComponent {
 class RocketBulletContactCallback extends ContactCallback<Rocket, Bullet> {
   @override
   void begin(Rocket a, Bullet b, Contact contact) {
-
     a.hitByBullet(b);
     b.shouldRemove = true;
-
   }
 
   @override
-  void end(Rocket a, Bullet b, Contact contact) {
-    // TODO: implement end
-  }
+  void end(Rocket a, Bullet b, Contact contact) {}
 }

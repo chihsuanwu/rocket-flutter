@@ -19,7 +19,10 @@ void main() async {
     'pause.png',
     'restart.png',
     'blackhole.png',
-    'whitehole.png'
+    'whitehole.png',
+    'meteorite_2.png',
+    'meteorite_3.png',
+    'sun.png',
   ]);
 
   runApp(GameWidget(game: RocketGame()));

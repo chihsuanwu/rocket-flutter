@@ -14,8 +14,6 @@ import 'RocketGame.dart';
 abstract class BWHole extends RocketElement {
   static const double RADIUS = 1.6;
 
-  List<Bullet> contactBullets = List();
-
   BWHole(RocketGame game, Vector2 position, ui.Image image, ELEMENT element) : super(
       game,
       position,
@@ -34,7 +32,6 @@ abstract class BWHole extends RocketElement {
       ..isSensor = true;
 
     final bodyDef = BodyDef()
-    // To be able to determine object in collision
       ..userData = this
       ..position = position
       ..type = BodyType.STATIC;
@@ -49,13 +46,11 @@ abstract class BWHole extends RocketElement {
 
 class BlackHole extends BWHole {
 
-
   BlackHole(RocketGame game, Vector2 position, ui.Image image) : super(
       game,
       position,
       image,
       ELEMENT.BLACK_HOLE);
-
 
   @override
   void update(double dt) {
@@ -93,17 +88,4 @@ class WhiteHole extends BWHole {
     super.update(dt);
   }
 
-}
-
-class BlackWhiteHoleBulletContactCallback extends ContactCallback<BWHole, Bullet> {
-  @override
-  void begin(BWHole a, Bullet b, Contact contact) {
-    a.contactBullets.add(b);
-  }
-
-
-  @override
-  void end(BWHole a, Bullet b, Contact contact) {
-    a.contactBullets.remove(b);
-  }
 }

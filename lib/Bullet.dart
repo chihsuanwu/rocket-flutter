@@ -3,8 +3,13 @@ import 'dart:ui';
 import 'package:flame/components.dart';
 import 'package:flame/palette.dart';
 import 'package:flame_forge2d/body_component.dart';
+import 'package:flutter/material.dart';
 import 'package:forge2d/forge2d.dart';
 import 'package:rocket/RocketGame.dart';
+
+enum BULLET_STATUS {
+  NORMAL, FIRE
+}
 
 class Bullet extends BodyComponent {
 
@@ -15,21 +20,21 @@ class Bullet extends BodyComponent {
   Vector2 _position;
   Vector2 _direction;
 
-  Bullet(this._game, this._position, double direction, [double speed = 1.0]) {
-    _direction = Vector2(SPEED * speed, 0);
-    _direction.rotate(direction);
+  BULLET_STATUS bulletStatus;
+
+  Bullet(this._game, this._position, Vector2 direction, [double speed = 1.0, this.bulletStatus = BULLET_STATUS.NORMAL]) {
+    _direction = direction.normalized() * SPEED * speed;
+    _game.add(this);
+    _game.bulletCounter++;
+
+    if (bulletStatus == BULLET_STATUS.FIRE) {
+      paint.color = Colors.red;
+    }
   }
 
   @override
   // TODO: implement debugMode
   bool get debugMode => true;
-
-  @override
-  void renderCircle(Canvas canvas, Offset center, double radius) {
-    // TODO: implement renderCircle
-    //print("hi");
-    super.renderCircle(canvas, center, radius);
-  }
 
   @override
   Body createBody() {
@@ -45,7 +50,6 @@ class Bullet extends BodyComponent {
       ..filter = (Filter()..categoryBits = 0x0002);
 
     final bodyDef = BodyDef()
-    // To be able to determine object in collision
       ..userData = this
       ..position = _position
       ..type = BodyType.DYNAMIC;
