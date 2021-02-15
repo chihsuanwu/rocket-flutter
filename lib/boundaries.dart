@@ -22,10 +22,6 @@ class Wall extends BodyComponent {
   Wall(this.start, this.end);
 
   @override
-  // TODO: implement debugMode
-  bool get debugMode => true;
-
-  @override
   void renderPolygon(Canvas canvas, List<Offset> coordinates) {
     final start = coordinates[0];
     final end = coordinates[1];

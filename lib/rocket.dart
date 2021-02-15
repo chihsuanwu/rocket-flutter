@@ -7,7 +7,7 @@ import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:flame_forge2d/sprite_body_component.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:forge2d/forge2d.dart';
-import 'package:rocket/Bullet.dart';
+import 'package:rocket/bullet.dart';
 import 'package:rocket/RocketGame.dart';
 import 'package:rocket/boundaries.dart';
 

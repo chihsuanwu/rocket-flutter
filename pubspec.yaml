@@ -63,6 +63,10 @@ flutter:
     - assets/images/meteorite_2.png
     - assets/images/meteorite_3.png
     - assets/images/sun.png
+    - assets/images/worm_hole_b.png
+    - assets/images/worm_hole_g.png
+    - assets/images/supernova.png
+    - assets/images/nebula.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

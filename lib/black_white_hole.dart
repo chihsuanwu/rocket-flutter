@@ -5,40 +5,22 @@ import 'dart:ui' as ui;
 import 'package:flame/components.dart';
 import 'package:flame_forge2d/contact_callbacks.dart';
 import 'package:forge2d/forge2d.dart';
-import 'package:rocket/Bullet.dart';
+import 'package:rocket/bullet.dart';
 import 'package:rocket/element.dart';
 import 'package:rocket/element_manager.dart';
 
 import 'RocketGame.dart';
 
-abstract class BWHole extends RocketElement {
+abstract class BWHole extends CircleElement {
   static const double RADIUS = 1.6;
 
-  BWHole(RocketGame game, Vector2 position, ui.Image image, ELEMENT element) : super(
+  BWHole(RocketGame game, ElementManager manager, Vector2 position, ui.Image image, ELEMENT element) : super(
       game,
+      manager,
       position,
-      Vector2(RADIUS * 2, RADIUS * 2),
+      RADIUS,
       image,
       element);
-
-  @override
-  Body createBody() {
-    final CircleShape shape = CircleShape();
-    shape.radius = RADIUS;
-
-
-    final fixtureDef = FixtureDef()
-      ..shape = shape
-      ..isSensor = true;
-
-    final bodyDef = BodyDef()
-      ..userData = this
-      ..position = position
-      ..type = BodyType.STATIC;
-
-    return world.createBody(bodyDef)
-      ..createFixture(fixtureDef);
-  }
 
   @override
   int get priority => 2;
@@ -46,46 +28,42 @@ abstract class BWHole extends RocketElement {
 
 class BlackHole extends BWHole {
 
-  BlackHole(RocketGame game, Vector2 position, ui.Image image) : super(
+  BlackHole(RocketGame game, ElementManager manager, Vector2 position) : super(
       game,
+      manager,
       position,
-      image,
+      game.blackHoleImage,
       ELEMENT.BLACK_HOLE);
 
   @override
   void update(double dt) {
+    super.update(dt);
 
     contactBullets.forEach((element) {
       final gravityVector = center - element.center;
-      print(2 / gravityVector.length2);
       final value = min(2 / gravityVector.length2, 120.0);
       element.body.applyForce(gravityVector * value);
     });
-
-    super.update(dt);
   }
-
 }
 
 class WhiteHole extends BWHole {
 
-  WhiteHole(RocketGame game, Vector2 position, ui.Image image) : super(
+  WhiteHole(RocketGame game, ElementManager manager, Vector2 position) : super(
       game,
+      manager,
       position,
-      image,
+      game.whiteHoleImage,
       ELEMENT.WHITE_HOLE);
 
   @override
   void update(double dt) {
+    super.update(dt);
 
     contactBullets.forEach((element) {
       final gravityVector = element.center - center;
-      print(2 / gravityVector.length2);
       final value = 2 / gravityVector.length2;
       element.body.applyForce(gravityVector * value);
     });
-
-    super.update(dt);
   }
-
 }

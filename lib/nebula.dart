@@ -10,16 +10,16 @@ import 'package:rocket/RocketGame.dart';
 import 'package:rocket/element.dart';
 import 'package:rocket/element_manager.dart';
 
-class Sun extends CircleElement {
-  static const double RADIUS = 1.2;
+class Nebula extends CircleElement {
+  static const double RADIUS = 1.5;
 
-  Sun(RocketGame game, ElementManager manager, Vector2 position) : super(
+  Nebula(RocketGame game, ElementManager manager, Vector2 position) : super(
       game,
       manager,
       position,
       RADIUS,
-      game.sunImage,
-      ELEMENT.SUN);
+      game.nebulaImage,
+      ELEMENT.NEBULA);
 
   @override
   void update(double dt) {
@@ -28,9 +28,10 @@ class Sun extends CircleElement {
     if (contactBullets.isEmpty) return;
 
     for (Bullet b in contactBullets) {
-      b.invisibleState = 0.0;
-      b.setFire();
-      b.body.linearVelocity = b.body.linearVelocity.normalized() * Bullet.SPEED * 2;
+      b.invisibleState += dt * 3.6;
+      if (b.invisibleState > 1.5) {
+        b.invisibleState = 1.5;
+      }
     }
   }
 }

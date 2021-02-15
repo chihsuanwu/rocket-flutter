@@ -7,23 +7,33 @@ import 'package:rocket/RocketGame.dart';
 import 'package:rocket/black_white_hole.dart';
 import 'package:rocket/element.dart';
 import 'package:rocket/meteorite.dart';
+import 'package:rocket/nebula.dart';
 import 'package:rocket/sun.dart';
+import 'package:rocket/supernova.dart';
+import 'package:rocket/worm_hole.dart';
 
 enum ELEMENT {
- BLACK_HOLE, WHITE_HOLE, METEORITE, SUN
+ BLACK_HOLE, WHITE_HOLE, METEORITE, SUN, WORM_HOLE, NEBULA, SUPERNOVA
 }
 
 class ElementData {
-  int max = 2, current = 0;
-  double appChance = 0.5, desChance = 0.05;
+  final int max;
+  final double appChance, desChance;
+
+  int current = 0;
+
+  ElementData({this.max = 2, this.appChance = 0.2, this.desChance = 0.1});
 }
 
 class ElementManager {
   Map<ELEMENT, ElementData> elementDataMap = {
     ELEMENT.BLACK_HOLE: ElementData(),
     ELEMENT.WHITE_HOLE: ElementData(),
-    ELEMENT.METEORITE: ElementData()..appChance = 1..max = 4,
+    ELEMENT.METEORITE: ElementData(),
     ELEMENT.SUN: ElementData(),
+    ELEMENT.WORM_HOLE: ElementData(appChance: 0.4, desChance: 0.05),
+    ELEMENT.SUPERNOVA: ElementData(max: 1, appChance: 0.1),
+    ELEMENT.NEBULA: ElementData(),
   };
 
   RocketGame _game;
@@ -32,7 +42,7 @@ class ElementManager {
 
   Random rng = Random();
 
-  double t = 0;
+  double _t = 0;
   
   List<RocketElement> elementList = [];
 
@@ -40,28 +50,18 @@ class ElementManager {
     for (final e in elementList) {
       _game.remove(e);
     }
-    elementList = [];
-
-    elementDataMap.forEach((key, value) {
-      value.current = 0;
-    });
   }
 
   void update(double dt) {
     if (dt == 0) return;
 
-    t += dt;
-    if (t < 1) return;
-    t -= 1;
+    _t += dt;
+    if (_t < 1) return;
+    _t -= 1;
 
-    List<RocketElement> rem = List.empty(growable: true);
     for (final e in elementList) {
       final data = elementDataMap[e.element];
-      removeElement(e, data, rem);
-    }
-
-    for (final e in rem) {
-      elementList.remove(e);
+      removeElement(e, data);
     }
 
     final randomOrder = elementDataMap.keys.toList()..shuffle();
@@ -72,74 +72,85 @@ class ElementManager {
     }
   }
 
-  void removeElement(RocketElement c, ElementData data, List<RocketElement> rem) {
+  void removeElement(RocketElement c, ElementData data) {
     final rngValue = rng.nextDouble();
     if (rngValue < data.desChance) {
-      rem.add(c);
       c.shouldRemove = true;
-      data.current--;
     }
   }
 
   void addElement(ELEMENT element, ElementData data) {
-    //if (unusedBlock.isEmpty) return;
+
     final available = data.max - data.current;
     for (int i = 0; i < available; i++) {
       final rngValue = rng.nextDouble();
       if (rngValue < data.appChance) {
-        final randomPos = Vector2.random() - Vector2.all(0.5) ;
-        //print(randomPos);
         final radius = elementSize(element);
-        randomPos.setValues(randomPos.x * (15 - radius * 2), randomPos.y * (10 - radius * 2));
-        //print(randomPos);
-        Vector3 c = Vector3(randomPos.x, randomPos.y, radius);
-        if (isOverlapIn(c)) {
+        final position = createRandomPosition(radius);
+        if (isOverlapWithAny(Vector3(position.x, position.y, radius))) {
           continue;
         }
 
-        // final randomIndex = rng.nextInt(unusedBlock.length);
-        // final position = unusedBlock[randomIndex];
-        // unusedBlock.removeAt(randomIndex);
-        //usedBlock.add(position);
+        if (element == ELEMENT.WORM_HOLE) {
+          final position2 = createRandomPosition(radius);
+          if (isOverlapWithAny(Vector3(position2.x, position2.y, radius))) {
+            continue;
+          }
 
+          if ((position.x - position2.x) * (position.x - position2.x) +
+              (position.y - position2.y) * (position.y - position2.y) <=
+              radius * radius * 4) {
+            continue;
+          }
 
-        final component = createComponent(element, randomPos);
-        elementList.add(component);
-        data.current++;
-        _game.add(component);
-
+          createComponent(element, position, position2);
+        } else {
+          createComponent(element, position);
+        }
       }
     }
   }
 
-  bool isOverlapIn(Vector3 c) {
+  Vector2 createRandomPosition(double radius) {
+    final randomPos = Vector2.random() - Vector2.all(0.5) ;
+
+    randomPos.setValues(randomPos.x * (15 - radius * 2), randomPos.y * (10 - radius * 2));
+
+    return randomPos;
+  }
+
+  bool isOverlapWithAny(Vector3 c) {
     for (final used in elementList) {
-      if (isOverlap(c, Vector3(used.position.x, used.position.y, used.size.x / 2))) return true;
+      if (used.isOverlap(c)) return true;
     }
     return false;
   }
 
-  bool isOverlap(Vector3 c1, Vector3 c2) {
-    double distSq = (c1.x - c2.x) * (c1.x - c2.x) + (c1.y - c2.y) * (c1.y - c2.y);
-    double radSumSq = (c1.z + c1.z) * (c2.z + c2.z);
+  bool isOverlap(Vector2 c1, Vector2 c2, double r) {
+    double distSq = (c1.x - c2.x) * (c1.x - c2.x) +
+        (c1.y - c2.y) * (c1.y - c2.y);
+    double radSumSq = r * r * 4;
 
     return distSq <= radSumSq;
   }
 
 
-
-  RocketElement createComponent(ELEMENT element, Vector2 position) {
-
+  createComponent(ELEMENT element, Vector2 position, [Vector2 position2]) {
     switch (element) {
       case ELEMENT.BLACK_HOLE:
-        return BlackHole(_game, position, _game.blackHoleImage);
+        BlackHole(_game, this, position); break;
       case ELEMENT.WHITE_HOLE:
-        return WhiteHole(_game, position, _game.whiteHoleImage);
+        WhiteHole(_game, this, position); break;
       case ELEMENT.METEORITE:
-        final is3Or2 = rng.nextBool();
-        return Meteorite(this, is3Or2, _game, position, is3Or2 ? _game.meteorite3Image:_game.meteorite2Image);
+        Meteorite(_game, this, position, rng.nextBool()); break;
       case ELEMENT.SUN:
-        return Sun(_game, position, _game.sunImage);
+        Sun(_game, this, position); break;
+      case ELEMENT.WORM_HOLE:
+        WormHole(_game, this, position, childPosition: position2); break;
+      case ELEMENT.SUPERNOVA:
+        Supernova(_game, this, position); break;
+      case ELEMENT.NEBULA:
+        Nebula(_game, this, position); break;
     }
 
     return null;
@@ -155,10 +166,15 @@ class ElementManager {
         return Meteorite.RADIUS;
       case ELEMENT.SUN:
         return Sun.RADIUS;
+      case ELEMENT.WORM_HOLE:
+        return WormHole.RADIUS;
+      case ELEMENT.SUPERNOVA:
+        return Supernova.RADIUS;
+      case ELEMENT.NEBULA:
+        return Nebula.RADIUS;
     }
 
     return null;
   }
-
 
 }

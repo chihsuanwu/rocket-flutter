@@ -14,9 +14,9 @@ import 'package:rocket/element.dart';
 import 'package:rocket/element_manager.dart';
 import 'package:rocket/meteorite.dart';
 
-import 'Bullet.dart';
+import 'bullet.dart';
 import 'count_down.dart';
-import 'Rocket.dart';
+import 'rocket.dart';
 
 
 
@@ -39,7 +39,9 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
 
   ui.Image rocket1PImage,
       rocket2PImage,
-      backgroundImage, playImage, restartImage, pauseImage,blackHoleImage, whiteHoleImage, meteorite2Image, meteorite3Image, sunImage;
+      backgroundImage, playImage, restartImage, pauseImage,
+      blackHoleImage, whiteHoleImage, meteorite2Image, meteorite3Image,
+      sunImage, wormHoleBlueImage, wormHoleGreenImage, supernovaImage, nebulaImage;
 
   ElementManager elementManager;
 
@@ -58,7 +60,6 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
 
   @override
   void onResize(Vector2 size) {
-    //print("MAIN RE");
     screenSize = size;
 
 
@@ -113,6 +114,10 @@ class RocketGame extends Forge2DGame with MultiTouchTapDetector {
     meteorite2Image = await images.load('meteorite_2.png');
     meteorite3Image = await images.load('meteorite_3.png');
     sunImage = await images.load('sun.png');
+    wormHoleBlueImage = await images.load('worm_hole_b.png');
+    wormHoleGreenImage = await images.load('worm_hole_g.png');
+    supernovaImage = await images.load('supernova.png');
+    nebulaImage = await images.load('nebula.png');
 
     rocket1P = Rocket(this, rocket1PImage, Player.PLAYER_1P);
     rocket2P = Rocket(this, rocket2PImage, Player.PLAYER_2P);

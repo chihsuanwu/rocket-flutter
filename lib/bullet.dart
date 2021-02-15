@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:flame/components.dart';
@@ -15,21 +16,32 @@ class Bullet extends BodyComponent {
 
   static const RADIUS = 0.16, SPEED = 7.2;
 
+  double invisibleState = 0.0;
+
   RocketGame _game;
 
   Vector2 _position;
   Vector2 _direction;
 
-  BULLET_STATUS bulletStatus;
+  BULLET_STATUS bulletStatus = BULLET_STATUS.NORMAL;
 
-  Bullet(this._game, this._position, Vector2 direction, [double speed = 1.0, this.bulletStatus = BULLET_STATUS.NORMAL]) {
+  Bullet(this._game, this._position, Vector2 direction, {double speed = 1.0, Bullet cloneBullet}) {
     _direction = direction.normalized() * SPEED * speed;
     _game.add(this);
     _game.bulletCounter++;
 
-    if (bulletStatus == BULLET_STATUS.FIRE) {
-      paint.color = Colors.red;
+    paint.color = Colors.white;
+
+    if (cloneBullet != null) {
+      bulletStatus = cloneBullet.bulletStatus;
+      invisibleState = cloneBullet.invisibleState;
+      paint.color = cloneBullet.paint.color;
     }
+  }
+
+  void setFire() {
+    bulletStatus = BULLET_STATUS.FIRE;
+    paint.color = Colors.red;
   }
 
   @override
@@ -69,12 +81,25 @@ class Bullet extends BodyComponent {
 
   @override
   void update(double dt) {
+    super.update(dt);
+
     if ((body.position.x < -RocketGame.WORLD_WIDTH / 2 - RADIUS ||
         body.position.x > RocketGame.WORLD_WIDTH / 2 + RADIUS)) {
       shouldRemove = true;
     }
 
-    super.update(dt);
+    if (invisibleState > 0) {
+      invisibleState -= dt * 0.5;
+    }
+
+    if (invisibleState < 0) invisibleState = 0;
+
+    final color = (bulletStatus == BULLET_STATUS.NORMAL ? Colors.white : Colors.red)
+      .withAlpha(((1 - min(invisibleState, 1.0)) * 255).toInt());
+
+    if (paint.color.value != color.value) {
+      paint.color = color;
+    }
   }
 
   @override
